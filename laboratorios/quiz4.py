@@ -1,4 +1,5 @@
 #Richard Hearn
+#Noel Centeno
 #Quiz 4
 
 for i in range (1, 4):
