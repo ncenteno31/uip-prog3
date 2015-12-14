@@ -1,0 +1,90 @@
+#QUE ES UN API?
+
+#Creación y exposición de API permite a la aplicación web para interactuar con otras aplicaciones a través de la comunicación de máquina a máquina.
+
+mkvirtualenv entorno_rest --no-site-packages
+workon entorno_rest
+pip install django djangorestframework
+django-admin.py startproject test_rest
+cd test_rest
+django-admin.py startapp apprest
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'apprest',
+)
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
+class Autor(models.Model):
+    nombre = models.TextField(max_length=100)
+    apellido = models.TextField(max_length=100)
+    
+class Libro(models.Model):
+    nombre = models.TextField(max_length=100)
+    editorial = models.TextField(max_length=100)
+    genero = models.TextField(max_length=100)
+    autor = models.ForeignKey(Autor)
+from rest_framework import serializers
+from .models import Libro, Autor
+ 
+class LibroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Libro
+        fields = ('id', 'nombre', 'editorial', 'genero', 'autor',)
+ 
+class AutorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Autor
+        fields = ('id', 'nombre', 'apellido',)
+from .models import Libro, Autor
+from .serializers import LibroSerializer, AutorSerializer
+from rest_framework import viewsets
+ 
+class LibroViewSet(viewsets.ModelViewSet):
+ 
+    serializer_class = LibroSerializer
+    queryset = Libro.objects.all()
+ 
+class AutorViewSet(viewsets.ModelViewSet):
+ 
+    serializer_class = AutorSerializer
+    queryset = Autor.objects.all()
+from apprest.viewsets import LibroViewSet, AutorViewSet
+from rest_framework.routers import DefaultRouter
+router = DefaultRouter()
+router.register(r'libros', LibroViewSet)
+router.register(r'autores', AutorViewSet)
+...
+    url(r'^', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    ...
+from django.conf.urls import patterns, include, url
+from django.contrib import admin
+admin.autodiscover()
+ 
+from apprest.viewsets import LibroViewSet, AutorViewSet
+from rest_framework.routers import DefaultRouter
+router = DefaultRouter()
+router.register(r'libros', LibroViewSet)
+router.register(r'autores', AutorViewSet)
+ 
+urlpatterns = patterns('',
+    # Examples:
+    # url(r'^$', 'test_rest.views.home', name='home'),
+    # url(r'^blog/', include('blog.urls')),
+    url(r'^', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+ 
+    url(r'^admin/', include(admin.site.urls)),
+)
