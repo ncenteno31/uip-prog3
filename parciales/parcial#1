@@ -1,0 +1,54 @@
+import cx_Oracle
+
+db = cx_Oracle.connect('inventario/inicio@localhost:1521/XE')
+cursor = db.cursor()
+op = 1
+acum = 0
+while op !=4:
+	print("******************************************************************\n")
+	print("*              Que opcion desea seguir o salir                   *\n")
+	print("*                    1 :  Mostrar valores de la tabla            *\n")
+	print("*                    2 :  Agregar valores                        *\n")
+	print("*                    3 :  Eliminar valores                       *\n")
+	print("*                    4 :  salir                                  *\n")
+	print("******************************************************************\n")
+	op = int(input())
+	if op == 1:
+		mostrar = ("SELECT * FROM PRODUCTOS")
+		cursor.execute(mostrar)
+		resultado = cursor.fetchall()
+		try:
+			if resultado == None:
+				print("\n\t!!!!No Informacion en la tabla!!!!\n")
+			else:
+				for registros in resultado:
+					produc = registros[0]
+					model = registros[1]
+					cost = registros[2]
+					prec = registros[3]
+					print("COD_PROD: %s COD_MODEL: %s COSTO: %s PRECIO: %s"%(str(produc),str(model),float(cost),float(prec)))					
+		except cx_Oracle.Error as err:
+			print("\n\t!!!!No se puedo conectar a la base de datos!!!!\n")
+			info = ("\n\t!!!!No se establecio la conexion!!!!\n")
+	elif op == 2:
+		produc = input("\nque producto es: ")
+		model = input("Introduzca modelo del producto: ")
+		cost = float(input("Introduzca el costo del producto: "))
+		prec = float(input("Introduzca el precio a la venta: "))
+		insert = ("INSERT INTO PRODUCTOS (COD_PROD, COD_MODEL, COSTO, PRECIO) VALUES ('%s','%s','%f','%f')\n\n" % (produc, model, cost, prec ));
+		cursor.execute(insert)
+		db.commit()
+		print('\n!!!Dato agregaso Satisfactoriamente!!!\n\n')
+	elif op == 3:
+		dato = input('\nIntroduzca el nombre del dato a eliminar: ')
+		consulta = ("SELECT * FROM PRODUCTOS WHERE COD_PROD = '%s'" %(dato))
+		resultado = cursor.execute(consulta)
+		if resultado == None:
+			print('!!!No hay datos dentros exitentes!!!')
+		else:
+			consulta_eliminar = ("DELETE FROM PRODUCTOS WHERE COD_PROD = '%s'" %(dato))
+			cursor.execute(consulta_eliminar)
+			db.commit()
+			print('\n\n!!!Dato eliminado satisfactoriamente!!!\n\n')
+	else:
+		print("\n!!!!Saliendo del sistema!!!!\n")
